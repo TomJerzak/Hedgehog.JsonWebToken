@@ -19,5 +19,18 @@ namespace Hedgehog.JsonWebToken.Tests
             jwt.Should().Contain("\"auth_token\": \"");
             jwt.Should().Contain("\"expires_in\": \"02:00:00\"");
         }
+
+        [Fact]
+        public void read_data_from_token()
+        {
+            IToken token = new Token();
+            IClaims claims = new Claims();
+            claims.Create("1", "User");
+            var jwt = token.CreateJsonWebToken(claims.ToArray(), new JwtSettings() { Timeout = 120 }, new JsonSerializerSettings { Formatting = Formatting.Indented });
+
+            var id = token.GetId(JsonConvert.DeserializeObject<TokenData>(jwt).AuthToken);
+
+            id.Should().Be("1");
+        }
     }
 }

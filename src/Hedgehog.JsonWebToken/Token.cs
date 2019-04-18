@@ -31,6 +31,14 @@ namespace Hedgehog.JsonWebToken
             return JsonConvert.SerializeObject(response, serializerSettings);
         }
 
+        public string GetId(string jsonWebToken)
+        {
+            var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
+
+            var token = jwtSecurityTokenHandler.ReadToken(jsonWebToken) as JwtSecurityToken;
+            return token?.Claims.First(claim => claim.Type == "id").Value;
+        }
+
         protected string GenerateEncodedToken(Claim[] claims, JwtSettings settings)
         {
             var jwt = new JwtSecurityToken(
