@@ -1,7 +1,10 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 
@@ -31,15 +34,15 @@ namespace Hedgehog.JsonWebToken
             return JsonConvert.SerializeObject(response, serializerSettings);
         }
 
-        public string GetId(string jsonWebToken)
+        public string GetId(string authorization)
         {
             var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
 
-            var token = jwtSecurityTokenHandler.ReadToken(jsonWebToken) as JwtSecurityToken;
+            var token = jwtSecurityTokenHandler.ReadToken(RemoveBearer(authorization)) as JwtSecurityToken;
             return token?.Claims.First(claim => claim.Type == "id").Value;
         }
 
-        protected string GenerateEncodedToken(Claim[] claims, JwtSettings settings)
+        private string GenerateEncodedToken(IEnumerable<Claim> claims, JwtSettings settings)
         {
             var jwt = new JwtSecurityToken(
                 issuer: settings.Issuer,
@@ -52,6 +55,11 @@ namespace Hedgehog.JsonWebToken
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
 
             return encodedJwt;
+        }
+
+        private static string RemoveBearer(string jsonWebToken)
+        {
+            return Regex.Replace(jsonWebToken, "bearer ", string.Empty, RegexOptions.IgnoreCase);
         }
     }
 }
